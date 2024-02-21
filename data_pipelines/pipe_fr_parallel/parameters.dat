@@ -1,0 +1,6 @@
+kmin = 0.01
+kmax = 3.
+Nk = 300
+cambdir = /home/bbose/ACTio-ReACTio/reactions/examples/codes/MGCAMB/src
+reactdir = /home/bbose/ACTio-ReACTio/reactions
+hmcodedir = /home/bbose/ACTio-ReACTio/reactions/examples/codes/HMcode_wob

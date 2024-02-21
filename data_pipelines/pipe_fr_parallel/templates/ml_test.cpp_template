@@ -1,0 +1,294 @@
+#include <cerrno>
+#include <cstdio>
+#include <cstdlib>
+#include <sys/stat.h>
+#include <cmath>
+
+
+#include <vector>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <time.h>
+#include <cmath>
+
+#include <omp.h>
+
+#include <Copter/HALO.h>
+#include <Copter/Cosmology.h>
+#include <Copter/LinearPS.h>
+#include <Copter/SpecialFunctions.h>
+#include <Copter/SPT.h>
+#include <Copter/BeyondLCDM.h>
+
+
+//using namespace std;
+using std::ifstream;
+using std::string;
+using std::istringstream;
+vector<vector<double> > mytrans;
+vector<vector<double> > mytransl;
+vector<vector<double> > mytranslnn;
+
+/* Example code to output the reaction and halo spectra for mg + neutrinos */
+int main(int argc, char* argv[]) {
+
+  // Which gravity or dark energy model?
+  // 1: GR  2: f(R) 3: DGP 4: quintessence 5: CPL
+  int mymodel = 2;
+
+  // Modified gravity active? This allows k* and \mathcal{E} to take on non LCDM values.
+  bool modg = true;
+  bool mgcamb = true;
+
+  // which cosmology is being computed for?
+  int iteration =
+
+  //output file name
+  char output[21];
+  sprintf(output, "%s%i%s","working_cp/reaction_",iteration,".dat");
+
+  // redshifts
+  double redshift =
+
+  // Output k-range
+  int Nk =
+  double kmin =
+  double kmax =
+
+  // output arrays
+  double reaction[Nk];
+  double kvals[Nk];
+  double lcdm_scaling;
+
+  // Cosmology
+  double h =
+  double n_s =
+  double Omega_m =
+  double Omega_b =
+  double Omega_nu =
+  double As =
+  double p1 =
+  double wa = 0.0;
+  double xi = 0.0;
+  double pscale = 0.05;
+  double epsrel = 1e-3;
+  double massb = 50.;
+
+  // store params for passing into React functions
+  double vars[7];
+      vars[0] = 1./(1.+redshift);
+      vars[1] = Omega_m;
+      vars[2] = Omega_nu; //  modified gravity param or w0 (see SpecialFunctions.cpp)
+      vars[5] = massb; // number of mass bins between 5<Log10[M]<18
+
+  // extended model parameters
+  double extpars[maxpars]; // Currently maxed out at 20 extra params
+    extpars[0] = p1;
+    extpars[1] = wa;
+    extpars[2] = xi;
+
+
+// Special functions class
+IOW iow;
+
+
+// Load transfer function at z from MGCAMB with all species at some redshift for target cosmology
+
+char transfer1[100];
+sprintf(transfer1, "%s%i%s","transfers/test_",iteration,"_transfer.dat");
+ifstream fin(transfer1);
+
+// Load in the transfer data
+string line;
+    while (getline(fin, line)) {      // for each line
+            vector<double> lineData;           // create a new row
+            double val;
+            istringstream lineStream(line);
+            while (lineStream >> val) {          // for each value in line
+                    lineData.push_back(val);           // add to the current row
+            }
+            mytrans.push_back(lineData);         // add row to allData
+    }
+
+
+
+// Load transfer function at z from MGCAMB with all species at some redshift for LCDM with massive neutrinos cosmology
+
+char transfer2[100];
+sprintf(transfer2, "%s%i%s","transfers/test_",iteration,"_transfer_lcdm.dat");
+ifstream finlcdm(transfer2);
+
+// Load in the transfer data
+string linelcdm;
+    while (getline(finlcdm, linelcdm)) {      // for each line
+            vector<double> lineData;           // create a new row
+            double val;
+            istringstream lineStream(linelcdm);
+            while (lineStream >> val) {          // for each value in line
+                    lineData.push_back(val);           // add to the current row
+            }
+            mytransl.push_back(lineData);         // add row to allData
+    }
+
+
+// Load transfer function at z=0 for LCDM without massive neutrinos cosmology
+char transfer3[100];
+sprintf(transfer3, "%s%i%s","transfers/test_",iteration,"_transfer_lcdm_nonu.dat");
+ifstream finlcdmnonu(transfer3);
+
+
+// Load in the transfer data
+string linelcdmnonu;
+    while (getline(finlcdmnonu, linelcdmnonu)) {      // for each line
+            vector<double> lineData;           // create a new row
+            double val;
+            istringstream lineStream(linelcdmnonu);
+            while (lineStream >> val) {          // for each value in line
+                    lineData.push_back(val);           // add to the current row
+            }
+            mytranslnn.push_back(lineData);         // add row to allData
+    }
+
+
+  // Populate arrays and normalise to 1 at large scales for Cosmology class input
+  int Nkr = mytrans.size();
+  int Nkrl = mytransl.size();
+  int Nkrlnn = mytranslnn.size();
+
+  int* Nkt = &Nkr;
+  int* Nktl = &Nkrl;
+  int* Nktlnn = &Nkrlnn;
+
+
+  array Tm(*Nkt);
+  array Tcb(*Nkt);
+  array Tcbl(*Nktl);
+  array Tnu(*Nkt);
+  array Tmnn(*Nktlnn);
+  array ki(*Nkt);
+  array kil(*Nktl);
+  array kilnn(*Nktlnn);
+
+
+  // Store modified transfers
+  for(int j = 0; j< Nkr; j++){
+           ki[j] = mytrans[j][0];
+           Tm[j] =  mytrans[j][6]; // total
+           Tcb[j] = mytrans[j][7]; // CB
+           Tnu[j] = mytrans[j][5]; // neutrinos
+      }
+  // store LCDM CB transfer
+  for(int j = 0; j< Nkrl; j++){
+          kil[j] = mytransl[j][0];
+          Tcbl[j] = mytransl[j][7];
+      }
+  // store LCDM m transfer
+  for(int j = 0; j< Nkrlnn; j++){
+          kilnn[j] = mytranslnn[j][0];
+          Tmnn[j] = mytranslnn[j][7];
+      }
+
+
+    // Load cosmology classes
+    Cosmology Cm(h, n_s, Omega_m, Omega_b, As, pscale, ki, Tm);
+    Cosmology Ccb(h, n_s, Omega_m, Omega_b, As, pscale, ki, Tcb);
+    Cosmology Cnu(h, n_s, Omega_m, Omega_b, As, pscale, ki, Tnu);
+    Cosmology Ccbl(h, n_s, Omega_m, Omega_b, As, pscale, kil, Tcbl);
+    Cosmology Clcdm(h, n_s, Omega_m, Omega_b, As, pscale, kilnn, Tmnn);
+
+
+    // Get linear P(k) from input transfer
+    LinearPS_as P_l(Cm, 0.);
+    LinearPS_as P_cb(Ccb, 0.);
+    LinearPS_as P_nu(Cnu, 0.);
+    LinearPS_as P_cbl(Ccbl, 0.);
+    LinearPS_as P_lcdm(Clcdm, 0.);
+
+
+
+    // Load halo class with all linear P(k)
+    HALO halo(Cm, P_l, P_cb, P_nu, P_cbl, epsrel);
+
+    // Load PT class with cb spectrum
+    SPT spt(Cm, P_cb, epsrel);
+
+
+    //initialise spherical collapse quantities and reaction quantities
+    halo.initialise(vars,extpars,mgcamb,modg,mymodel);
+
+    for(int i =0; i < Nk;  i ++) {
+        // 1.01 is put so that spline covers full range of input k values
+        kvals[i] = kmin * exp(i*log(kmax/kmin)/(Nk-1));
+        if(kvals[i]<0.01){
+          reaction[i] =  1.;
+        }
+        else{
+          reaction[i] = halo.reaction_nu(kvals[i], vars);
+         }
+       }
+
+
+
+/* Open reaction output file */
+FILE* fp = fopen(output, "w");
+
+double p0;
+// Output to file
+for(int i =0; i < Nk;  i ++) {
+  fprintf(fp, "%e %e \n", kvals[i], reaction[i]); // print to file
+}
+
+/*close output file*/
+ fclose(fp);
+
+
+// Pseudo spectra rescaled to z=0 using full Om
+double pseudo;
+double kminp = 1e-4;
+double kmaxp = 100.;
+double Nkp = 500;
+
+char pseudo_file[100];
+sprintf(pseudo_file, "%s%i%s","working_cp/pseudo_",iteration,".txt");
+FILE* fpp = fopen(pseudo_file, "w");
+
+vars[0] = 1./(1.+redshift);
+vars[1] = Omega_m;
+vars[2] = 0.0; //remove massive neutrinos (HMCode won't include them in growth factors!)
+
+// just in case ...
+extpars[0] = 0.0;
+extpars[1] = 0.0;
+
+iow.initnorm(vars,extpars, 1);
+
+  for(int i =0; i < Nkp;  i ++) {
+    double k =  kminp * exp(i*log(kmaxp/kminp)/(Nkp-1));
+    pseudo =  P_l(k) * pow(dnorm_spt/Dl_spt,2);
+    fprintf(fpp,"%e %e   \n", k, pseudo);
+        }
+
+ /*close output file*/
+  fclose(fpp);
+
+
+// Output LCDM without massive neutrinos at z=0 for HMCode
+
+ char lcdm_file[100];
+ sprintf(lcdm_file, "%s%i%s","working_cp/lcdm_",iteration,".txt");
+ FILE* flcdm = fopen(lcdm_file, "w");
+
+   for(int i =0; i < Nkp;  i ++) {
+     double k =  kminp * exp(i*log(kmaxp/kminp)/(Nkp-1));
+     double plcdmz0 =  P_lcdm(k);
+     fprintf(flcdm,"%e %e   \n", k, plcdmz0);
+         }
+
+  /*close output file*/
+   fclose(flcdm);
+
+
+ return 0;
+ }

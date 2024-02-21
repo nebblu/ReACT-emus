@@ -1,0 +1,3 @@
+This CosmoPower emulator was trained on 100,000 ReACT x HMCode2020_pseudo /HMCode2020_LCDM boosts. The priors are as follows: $\Omega_m \in [0.24,0.35]$,  $\Omega_b \in [0.04,0.06]$,  $h \in [0.63,0.75]$,  $n_s \in [0.9,1.01]$,  $10^{9} \A_s \in [1.7,2.5]$,  $\Omega_\nu \in [0,0.00317]$,  $|f_{\rm R0}| \in [10^{-10}, 10^{-4}]$. 
+
+For an example script on how to use the emulator in a python notebook, see emulator_pipelines/cosmopower/training_boost.py .

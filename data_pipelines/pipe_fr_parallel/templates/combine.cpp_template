@@ -1,0 +1,139 @@
+#include <cerrno>
+#include <cstdio>
+#include <cstdlib>
+#include <sys/stat.h>
+#include <cmath>
+
+
+#include <vector>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <time.h>
+#include <cmath>
+
+#include <Copter/Spline.h>
+
+
+//using namespace std;
+using std::ifstream;
+using std::string;
+using std::istringstream;
+using std::vector;
+
+
+/* Example code to output the reaction and halo spectra for mg + neutrinos */
+int main(int argc, char* argv[]) {
+
+
+int batchno =
+int iteration =
+
+
+//output file name
+  char output[100];
+  sprintf(output, "%s%i%s","pipe_fr_parallel/data/boost",batchno,".dat");
+
+
+
+vector<vector<double> > reaction;
+// Load the reaction with columns as z and rows in k
+  char reactfile[100];
+  sprintf(reactfile, "%s%i%s","working_cp/reaction_",iteration,".dat");
+
+
+ifstream fin(reactfile);
+
+// Load in the transfer data
+string line;
+    while (getline(fin, line)) {      // for each line
+            vector<double> lineData;           // create a new row
+            double val;
+            istringstream lineStream(line);
+            while (lineStream >> val) {          // for each value in line
+                    lineData.push_back(val);           // add to the current row
+            }
+            reaction.push_back(lineData);         // add row to allData
+    }
+
+
+
+
+int Nk = reaction.size();
+
+double myholder[Nk][1];
+
+  char hmcode_in[100];
+  sprintf(hmcode_in, "%s%i%s","working_cp/hmcode_",iteration,".dat");
+
+  char hmcode_lcdm_in[100];
+  sprintf(hmcode_lcdm_in, "%s%i%s","working_cp/hmcode_lcdm_",iteration,".dat");
+
+ifstream finhm(hmcode_in);
+ifstream finhm_lcdm(hmcode_lcdm_in);
+
+vector<vector<double> > hmcode;
+// Load in the transfer data
+string linehm;
+    while (getline(finhm, linehm)) {      // for each line
+            vector<double> lineData;           // create a new row
+            double val;
+            istringstream lineStream(linehm);
+            while (lineStream >> val) {          // for each value in line
+                    lineData.push_back(val);           // add to the current row
+            }
+            hmcode.push_back(lineData);         // add row to allData
+    }
+
+
+vector<vector<double> > hmcode_lcdm;
+// Load in the transfer data
+string linehm_lcdm;
+    while (getline(finhm_lcdm, linehm_lcdm)) {      // for each line
+            vector<double> lineData;           // create a new row
+            double val;
+            istringstream lineStream(linehm_lcdm);
+            while (lineStream >> val) {          // for each value in line
+                    lineData.push_back(val);           // add to the current row
+            }
+            hmcode_lcdm.push_back(lineData);         // add row to allData
+    }
+
+
+
+double pr,ph;
+
+ for(int j =0; j <Nk;  j ++) {
+      pr = reaction[j][1];
+      ph = hmcode[j][1]/hmcode_lcdm[j][1];
+      myholder[j][0] = pr * ph ;
+}
+
+
+double Omega_m =
+double Omega_b =
+double Omega_nu =
+double H0 =
+double ns =
+double As =
+double p1 =
+double z =
+
+
+/* Open output file */
+FILE* fp = fopen(output, "a");
+
+
+fprintf(fp, "\n" );
+fprintf(fp,"%d %e %e %e %e %e %e %e %e ", iteration,  Omega_m, Omega_b, Omega_nu, H0, ns, As, p1, z );
+
+for(int j =0; j <Nk;  j ++) {
+      fprintf(fp," %e ", myholder[j][0]);
+      }
+
+
+    /*close output file*/
+    fclose(fp);
+    return 0;
+}

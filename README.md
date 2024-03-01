@@ -1,5 +1,5 @@
 # ReACT-emus
-Repository for emulators of the cosmological matter power spectrum boost
+Repository for emulators of the cosmological matter power spectrum boost based on the [halo model reaction](https://arxiv.org/abs/1812.05594).
 
 ## Data pipelines 
 

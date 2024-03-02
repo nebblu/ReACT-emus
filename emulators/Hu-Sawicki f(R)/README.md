@@ -1,4 +1,8 @@
-This CosmoPower emulator was trained on 100,000 ReACT x HMCode2020_pseudo /HMCode2020_LCDM boosts. The priors are as follows: 
+This CosmoPower emulator was trained on 100,000 boost predictions: 
+
+> $B(k,z) = \frac{\mathcal{R}(k,z) \times P_{\rm HMCode2020}^{\rm pseudo}(k,z)}{P_{\rm HMCode2020}^{\rm \Lambda CDM}(k,z)}$ . 
+
+The priors are as follows: 
 
 - $\Omega_m \in [0.24,0.35]$,
 - $\Omega_b \in [0.04,0.06]$,

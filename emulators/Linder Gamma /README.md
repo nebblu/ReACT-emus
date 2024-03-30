@@ -42,6 +42,6 @@ Same conditions and priors as above with the following differences:
 - $\gamma_0 \in [0.,        1.]$,
 - $\gamma_1 \in [-0.7,      0.7]$,
 - $q_1       \in [-2.,         3.]$,
-- \(k_{\text{min}} = 0.01\),
-- \(k_{\text{max}} = 5.0\),
-- \(N_{\text{kp}} = 300\).
+- $k_{\rm min} = 0.01$,
+- $k_{\rm max} = 5.0$,
+- $N_{\rm kp} = 300$.

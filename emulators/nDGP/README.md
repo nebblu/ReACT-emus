@@ -13,12 +13,16 @@ The priors are as follows:
 - $\log_{10}{\Omega_{rc}} \in [-3., 2.]$,
 - $z\in[0,2.4]$.
 
-The emulator generates predictions for \(300\) wave numbers \(k\), defined as:
-\[ k = k_{\text{min}} \cdot \exp(i \cdot \frac{\log(k_{\text{max}}/k_{\text{min}})}{N_{\text{kp}}-1}) \text{ for } i \text{ in range}(N_{\text{kp}}) \]
-where:
-- \(k_{\text{min}} = 0.01\),
-- \(k_{\text{max}} = 5.0\),
-- \(N_{\text{kp}} = 300\).
+The emulator generates predictions for 300 wave numbers $k$, defined as:
+
+```python
+import numpy as np 
+
+kminp = 0.01
+kmaxp = 5.
+Nkp = 300
+k_modes = [ kminp * np.exp(i*np.log(kmaxp/kminp)/(Nkp-1)) for i in range(Nkp)]
+```
 
 
 

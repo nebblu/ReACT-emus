@@ -16,7 +16,8 @@ The priors are as follows:
 - $q_1 \in [-5., 5.]$,
 - $z\in[0,2.4]$.
 
-The emulator generates predictions for \(350\) wave numbers \(k\), defined as:
+The emulator generates predictions for 350 wave numbers $k$, defined as:
+
 ```python
 import numpy as np 
 
@@ -39,9 +40,9 @@ With the same screening model and the time-dependent growth index parametrisatio
 Same conditions and priors as above with the following differences:
 
 - trained on 87622 and tested on 9953 boost predictions,
-- $\gamma_0 \in [0.,        1.]$,
-- $\gamma_1 \in [-0.7,      0.7]$,
-- $q_1       \in [-2.,         3.]$,
+- $\gamma_0 \in [0., 1.]$,
+- $\gamma_1 \in [-0.7, 0.7]$,
+- $q_1       \in [-2., 3.]$,
 - $k_{\rm min} = 0.01$,
 - $k_{\rm max} = 5.0$,
 - $N_{\rm kp} = 300$.

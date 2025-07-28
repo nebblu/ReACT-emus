@@ -46,3 +46,19 @@ Same conditions and priors as above with the following differences:
 - $k_{\rm min} = 0.01$,
 - $k_{\rm max} = 5.0$,
 - $N_{\rm kp} = 300$.
+
+
+## Time-independent Growth Index Parametrisation with Full Screening
+
+Three screening parameters from https://arxiv.org/abs/2210.01094 are included in the model, the growth index is time-independent.
+
+Similar conditions and prios as above with the following differences:
+
+- trained on 35904 and tested on 3992 boost predictions,
+- $h \in [0.6375,      0.731]$,
+- $q_1       \in [-5., 5.]$,
+- $q_2       \in [-5., 5.]$,
+- $q_3       \in [-5., 5.]$,
+- $k_{\rm min} = 0.01$,
+- $k_{\rm max} = 5.0$,
+- $N_{\rm kp} = 300$.
